@@ -4,16 +4,21 @@ import Carousel from "./Carousel";
 import ErrorBoundary from "./ErrorBoundary";
 import ThemeContext from "./ThemeContext";
 import Modal from "./Modal";
+import { Client } from "@petfinder/petfinder-js";
+
+const client = new Client({
+  apiKey: "oShvE21Gc1tMh5XOj4Gd0GkK0QZKkwP2UGm2cGusZRCbeUEblL",
+  secret: "F81fM4hRyVqSNBY6Azp8RNJ2gefl5pZBM25Ewllw",
+});
 
 class Details extends Component {
   state = { loading: true, showModal: false };
 
   async componentDidMount() {
-    const res = await fetch(
-      `http://pets-v2.dev-apis.com/pets?id=${this.props.params.id}`
-    );
-    const json = await res.json();
-    this.setState(Object.assign({ loading: false }, json.pets[0]));
+    client.animal.show(this.props.params.id).then((resp) => {
+      console.log(resp);
+      this.setState(Object.assign({ loading: false }, resp.data.animal));
+    });
   }
 
   toggleModal = () => this.setState({ showModal: !this.state.showModal });
@@ -23,18 +28,29 @@ class Details extends Component {
       return <h2>loading...</h2>;
     }
 
-    const { animal, breed, city, state, description, name, images, showModal } =
-      this.state;
+    const {
+      type,
+      breeds,
+      description,
+      name,
+      photos,
+      gender,
+      age,
+      organization_id,
+      url,
+      showModal,
+    } = this.state;
 
     return (
       <div className="details">
-        <Carousel images={images} />
+        <Carousel images={photos} />
         <div>
-          <h1>{name}</h1>
+          <h1>{name.toUpperCase()}</h1>
           <h2>
-            {" "}
-            {animal} - {breed} - {city}, {state}
+            {type} - {breeds.primary} - {gender} - {age} -{" "}
+            {organization_id.substring(0, 2)}
           </h2>
+          <p>{description}</p>
           <ThemeContext.Consumer>
             {([theme]) => (
               <button
@@ -45,13 +61,12 @@ class Details extends Component {
               </button>
             )}
           </ThemeContext.Consumer>
-          <p>{description}</p>
           {showModal ? (
             <Modal>
               <div>
                 <h1>Would you like to adopt {name}?</h1>
                 <div className="buttons">
-                  <a href="https://bit.ly/pet-adopt">Yes</a>
+                  <a href={url}>Yes</a>
                   <button onClick={this.toggleModal}>No</button>
                 </div>
               </div>
