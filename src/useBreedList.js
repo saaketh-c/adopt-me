@@ -1,4 +1,10 @@
 import { useState, useEffect } from "react";
+import { Client } from "@petfinder/petfinder-js";
+
+const client = new Client({
+  apiKey: "oShvE21Gc1tMh5XOj4Gd0GkK0QZKkwP2UGm2cGusZRCbeUEblL",
+  secret: "F81fM4hRyVqSNBY6Azp8RNJ2gefl5pZBM25Ewllw",
+});
 
 const localCache = {};
 export default function useBreedList(animal) {
@@ -18,13 +24,16 @@ export default function useBreedList(animal) {
       setBreedList([]);
       setStatus("loading");
 
-      const res = await fetch(
-        `http://pets-v2.dev-apis.com/breeds?animal=${animal}`
-      );
-      const json = await res.json();
-      localCache[animal] = json.breeds || [];
-      setBreedList(localCache[animal]);
-      setStatus("loaded");
+      client.animalData.breeds(animal).then((resp) => {
+        let outList = [];
+        resp.data.breeds.forEach(function (breed) {
+          outList.push(breed.name);
+        });
+
+        localCache[animal] = outList || [];
+        setBreedList(localCache[animal]);
+        setStatus("loaded");
+      });
     }
   }, [animal]);
 

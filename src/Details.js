@@ -16,7 +16,6 @@ class Details extends Component {
 
   async componentDidMount() {
     client.animal.show(this.props.params.id).then((resp) => {
-      console.log(resp);
       this.setState(Object.assign({ loading: false }, resp.data.animal));
     });
   }

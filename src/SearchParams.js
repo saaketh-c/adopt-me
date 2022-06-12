@@ -4,11 +4,10 @@ import Results from "./Results";
 import ThemeContext from "./ThemeContext";
 import { Client } from "@petfinder/petfinder-js";
 
-const ANIMALS = ["bird", "cat", "dog", "rabbit", "reptile"];
-
 const SearchParams = () => {
   const [location, setLocation] = useState("");
   const [animal, setAnimal] = useState("");
+  const [animalTypes, setAnimalTypes] = useState([]);
   const [breed, setBreed] = useState("");
   const [breeds] = useBreedList(animal);
   const [pets, setPets] = useState([]);
@@ -21,17 +20,29 @@ const SearchParams = () => {
 
   useEffect(() => {
     requestPets();
+    requestAnimalTypes();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function requestPets() {
-    console.log("requestPets");
-    console.log(animal);
-    console.log(breed);
-    console.log(location);
+    let search = {};
+    if (animal.length) {
+      search.type = animal;
+    }
+    if (breed.length) {
+      search.breed = breed;
+    }
+    if (location.length) {
+      search.location = location;
+    }
 
-    client.animal.search().then((resp) => {
-      console.log(resp);
+    client.animal.search(search).then((resp) => {
       setPets(resp.data.animals);
+    });
+  }
+
+  async function requestAnimalTypes() {
+    client.animalData.types().then((resp) => {
+      setAnimalTypes(resp.data.types);
     });
   }
 
@@ -48,7 +59,7 @@ const SearchParams = () => {
           <input
             id="location"
             value={location}
-            placeholder="Location"
+            placeholder="City, State OR postal code"
             onChange={(e) => setLocation(e.target.value)}
           />
         </label>
@@ -67,9 +78,9 @@ const SearchParams = () => {
             }}
           >
             <option />
-            {ANIMALS.map((animal) => (
-              <option key={animal} value={animal}>
-                {animal}
+            {animalTypes.map((animal) => (
+              <option key={animal.name} value={animal.name}>
+                {animal.name}
               </option>
             ))}
           </select>
@@ -107,7 +118,7 @@ const SearchParams = () => {
             <option value="mediumorchid">Medium Orchid</option>
           </select>
         </label>
-        <button style={{ backgroundColor: theme }}>Submit</button>
+        <button style={{ backgroundColor: theme }}>Search</button>
       </form>
       <Results pets={pets} />;
     </div>
