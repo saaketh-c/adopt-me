@@ -17,12 +17,13 @@ class ErrorBoundary extends Component {
   }
   render() {
     if (this.state.redirect) {
-      return <Navigate to="/" />;
+      return <Navigate to="/adopt-me/" />;
     } else if (this.state.hasError) {
       return (
         <h2>
-          There was an error with this listing. <Link to="/">Click here</Link>{" "}
-          to back to the home page or wait five seconds.
+          There was an error with this listing.{" "}
+          <Link to="/adopt-me/">Click here</Link> to back to the home page or
+          wait five seconds.
         </h2>
       );
     }
