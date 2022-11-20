@@ -3,6 +3,8 @@ import useBreedList from "./useBreedList";
 import Results from "./Results";
 import ThemeContext from "./ThemeContext";
 import { Client } from "@petfinder/petfinder-js";
+import Pagination from "./Pagination";
+import "./style.scss";
 
 const SearchParams = () => {
   const [location, setLocation] = useState("");
@@ -12,6 +14,9 @@ const SearchParams = () => {
   const [breeds] = useBreedList(animal);
   const [pets, setPets] = useState([]);
   const [theme, setTheme] = useContext(ThemeContext);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(1);
+  const [totalCount, setTotalCount] = useState(1);
 
   const client = new Client({
     apiKey: "oShvE21Gc1tMh5XOj4Gd0GkK0QZKkwP2UGm2cGusZRCbeUEblL",
@@ -21,7 +26,7 @@ const SearchParams = () => {
   useEffect(() => {
     requestPets();
     requestAnimalTypes();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function requestPets() {
     let search = {};
@@ -35,8 +40,12 @@ const SearchParams = () => {
       search.location = location;
     }
 
+    search.page = currentPage;
+
     client.animal.search(search).then((resp) => {
       setPets(resp.data.animals);
+      setPageSize(resp.data.pagination.count_per_page);
+      setTotalCount(resp.data.pagination.total_count);
     });
   }
 
@@ -120,7 +129,14 @@ const SearchParams = () => {
         </label>
         <button style={{ backgroundColor: theme }}>Search</button>
       </form>
-      <Results pets={pets} />;
+      <Results pets={pets} />
+      <Pagination
+        className="pagination-bar"
+        currentPage={currentPage}
+        totalCount={totalCount}
+        pageSize={pageSize}
+        onPageChange={(page) => setCurrentPage(page)}
+      />
     </div>
   );
 };
